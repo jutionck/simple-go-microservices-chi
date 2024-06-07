@@ -13,13 +13,18 @@ import (
 type App struct {
 	router http.Handler
 	rdb    *redis.Client
+	config Config
 }
 
-func New() *App {
+func New(config Config) *App {
 	app := &App{
-		router: loadRoutes(),
-		rdb:    redis.NewClient(&redis.Options{}),
+		rdb: redis.NewClient(&redis.Options{
+			Addr: config.RedisAddress,
+		}),
+		config: config,
 	}
+
+	app.loadRoutes()
 
 	return app
 }

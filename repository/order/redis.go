@@ -40,7 +40,7 @@ func (r *RedisRepo) Insert(ctx context.Context, order model.Order) error {
 	}
 
 	if _, err := txn.Exec(ctx); err != nil {
-		return fmt.Errorf("failed to exec :%w", err)
+		return fmt.Errorf("failed to exec: %w", err)
 	}
 
 	return nil
@@ -63,6 +63,7 @@ func (r *RedisRepo) FindByID(ctx context.Context, id uint64) (model.Order, error
 	if err != nil {
 		return model.Order{}, fmt.Errorf("failed to decode order json: %w", err)
 	}
+
 	return order, nil
 }
 
@@ -86,7 +87,7 @@ func (r *RedisRepo) DeleteByID(ctx context.Context, id uint64) error {
 	}
 
 	if _, err := txn.Exec(ctx); err != nil {
-		return fmt.Errorf("failed to exec :%w", err)
+		return fmt.Errorf("failed to exec: %w", err)
 	}
 
 	return nil
@@ -106,6 +107,7 @@ func (r *RedisRepo) Update(ctx context.Context, order model.Order) error {
 	} else if err != nil {
 		return fmt.Errorf("set order: %w", err)
 	}
+
 	return nil
 }
 
@@ -128,7 +130,9 @@ func (r *RedisRepo) FindAll(ctx context.Context, page FindAllPage) (FindResult, 
 	}
 
 	if len(keys) == 0 {
-		return FindResult{Orders: []model.Order{}}, nil
+		return FindResult{
+			Orders: []model.Order{},
+		}, nil
 	}
 
 	xs, err := r.Client.MGet(ctx, keys...).Result()
@@ -137,13 +141,14 @@ func (r *RedisRepo) FindAll(ctx context.Context, page FindAllPage) (FindResult, 
 	}
 
 	orders := make([]model.Order, len(xs))
+
 	for i, x := range xs {
 		x := x.(string)
 		var order model.Order
 
 		err := json.Unmarshal([]byte(x), &order)
 		if err != nil {
-			return FindResult{}, fmt.Errorf("failed to decode json: %w", err)
+			return FindResult{}, fmt.Errorf("failed to decode order json: %w", err)
 		}
 
 		orders[i] = order
