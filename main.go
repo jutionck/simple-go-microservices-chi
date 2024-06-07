@@ -1,28 +1,16 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"net/http"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	"mipdevp.com/golang-microservices/application"
 )
 
 func main() {
-	router := chi.NewRouter()
-	router.Use(middleware.Logger)
-	router.Get("/ping", basiHandler)
-
-	server := &http.Server{
-		Addr:    ":3000",
-		Handler: router,
+	app := application.New()
+	err := app.Start(context.TODO())
+	if err != nil {
+		fmt.Println("failed to start serve", err)
 	}
-
-	if err := server.ListenAndServe(); err != nil {
-		fmt.Printf("failed to listen ro serve %v", err.Error())
-	}
-}
-
-func basiHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("PING!!!"))
 }
